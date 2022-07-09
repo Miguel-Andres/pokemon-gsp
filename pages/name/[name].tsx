@@ -10,6 +10,7 @@ import { GetStaticPaths } from 'next'
 import { localFavorites } from '../../utils';
 import confetti from 'canvas-confetti';
 import { useState } from 'react';
+import { getPokemonInfo } from '../../utils/getPokemonInfo';
 
 interface Props {
     pokemon : Pokemon
@@ -129,19 +130,25 @@ export const getStaticPaths: GetStaticPaths = async (ctx) => {
         }
         ))             
         ,
-        fallback: false
+        fallback: "blocking"
     }
 }
 
 export const getStaticProps: GetStaticProps = async ({params}) => {
-    const {name} = params as {name: string}
-    const { data } = await  pokeApi.get(`pokemon/${name}`) 
 
-    const pokemon ={
-        id: data.id ,
-        name : data.name ,
-        sprites : data.sprites
+    const {name} = params as {name: string}
+
+    const pokemon = await  getPokemonInfo(name.toLowerCase())
+
+    if(!pokemon){
+      return{
+        redirect:{
+          destination:"/" ,
+          permanent: false 
+        }
+      }
     } 
+
     return {
         props: {
           pokemon 
